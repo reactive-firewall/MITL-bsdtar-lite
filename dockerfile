@@ -114,15 +114,17 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
 
 WORKDIR /home/builder
 
-# Build LLVM (monorepo layout: projects under llvmorg/llvm-project)
-RUN mkdir -p /home/builder/llvm-build && \
-    cd /home/builder/llvm-build && \
+# Build LLVM (monorepo layout: projects under llvmorg/)
+RUN mkdir -p /home/builder/llvm && \
+    mkdir -p /home/builder/llvmorg/llvm-build && \
+    cd /home/builder/llvmorg/llvm-build && \
     cmake -GNinja \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
       -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
       -DLLVM_ENABLE_RUNTIMES="" \
-      ../llvmorg/llvm-project/llvm && \
+      -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang \
+      ../llvm && \
     cmake --build . --target install --parallel $(nproc)
 
 # Ensure new toolchain is first in PATH
