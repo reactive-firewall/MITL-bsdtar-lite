@@ -8,8 +8,6 @@ ARG LLVM_VERSION=${LLVM_VERSION:-"21.1.0"}
 # shellcheck disable=SC2154
 ARG TAR_VERSION=${TAR_VERSION:-"3.8.1"}
 
-ARG TARGETARCH=${TARGETARCH:-"amd64"}
-
 # ---- fetcher stage: install and cache required Alpine packages and fetch release tarballs ----
 
 # Use MIT licensed Alpine as the base image for the build environment
@@ -17,9 +15,9 @@ ARG TARGETARCH=${TARGETARCH:-"amd64"}
 FROM --platform="linux/${TARGETARCH}" alpine:latest AS fetcher
 
 # Set environment variables
-ENV LLVM_VERSION=${LLVM_VERSION}
+ENV LLVM_VERSION=${LLVM_VERSION:-"21.1.0"}
 ENV LLVM_URL="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VERSION}.tar.gz"
-ENV TAR_VERSION=${TAR_VERSION}
+ENV TAR_VERSION=${TAR_VERSION:-"3.8.1"}
 ENV LIBARCHIVE_URL="https://github.com/libarchive/libarchive/archive/refs/tags/v${TAR_VERSION}.tar.gz"
 WORKDIR /fetch
 ENV CC=clang
