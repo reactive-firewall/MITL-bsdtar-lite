@@ -41,7 +41,7 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
   apk add \
     ca-certificates \
     curl \
-    bsdtar
+    cmd:bsdtar
 
 # just need a place to fetch
 RUN mkdir -p /fetch
