@@ -85,6 +85,7 @@ ENV BSD=/usr/include/bsd
 # ninja-build - Apache-2.0
 # build-base - MIT
 # musl-dev - MIT
+# libc6-compat - MIT
 # libbsd-dev - BSD-3-Clause
 # curl - curl License / MIT
 # zlib-dev - zlib license
@@ -105,6 +106,7 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
     cmd:ninja \
     cmd:clang++ \
     musl-dev \
+    libc6-compat \
     pkgconfig \
     zlib-dev \
     libbsd-dev \
