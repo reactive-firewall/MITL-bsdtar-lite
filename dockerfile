@@ -102,6 +102,8 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
     cmake \
     make \
     ninja-build \
+    cmd:ninja \
+    cmd:clang++ \
     musl-dev \
     pkgconfig \
     zlib-dev \
