@@ -2,6 +2,10 @@
 
 # version is passed through by Docker.
 # shellcheck disable=SC2154
+ARG LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.1"}
+
+# version is passed through by Docker.
+# shellcheck disable=SC2154
 ARG LLVM_VERSION=${LLVM_VERSION:-"21.1.0"}
 
 # version is passed through by Docker.
@@ -15,6 +19,8 @@ ARG TAR_VERSION=${TAR_VERSION:-"3.8.1"}
 FROM --platform="linux/${TARGETARCH}" alpine:latest AS fetcher
 
 # Set environment variables
+ENV LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.1"}
+ENV LIBEXECINFO_URL="https://github.com/reactive-firewall/libexecinfo/raw/refs/tags/v${LIBEXECINFO_VERSION}/libexecinfo-${LIBEXECINFO_VERSION}r.tar.bz2"
 ENV LLVM_VERSION=${LLVM_VERSION:-"21.1.0"}
 ENV LLVM_URL="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VERSION}.tar.gz"
 ENV TAR_VERSION=${TAR_VERSION:-"3.8.1"}
@@ -46,6 +52,12 @@ RUN mkdir -p /fetch
 WORKDIR /fetch
 
 # Fetch the signed release tarballs (or supply via build-args)
+RUN curl -fsSLo libexecinfo-${LIBEXECINFO_VERSION}r.tar.bz2 \
+    --url "$LIBEXECINFO_URL" && \
+    bsdtar -xzf libexecinfo-${LIBEXECINFO_VERSION}r.tar.bz2 && \
+    rm libexecinfo-${LIBEXECINFO_VERSION}r.tar.bz2 && \
+    mv /fetch/libexecinfo-${LIBEXECINFO_VERSION}r /fetch/libexecinfo && \
+    rm /fetch/libexecinfo/patches.tar.bz2
 RUN curl -fsSLo llvmorg-${LLVM_VERSION}.tar.gz \
     --url "$LLVM_URL" && \
     bsdtar -xzf llvmorg-${LLVM_VERSION}.tar.gz && \
@@ -61,10 +73,13 @@ RUN curl -fsSLo v${TAR_VERSION}.tar.gz \
 FROM --platform="linux/${TARGETARCH}" alpine:latest AS pre-bsdtar-builder
 
 # copy ONLY fetched source
+COPY --from=fetcher /fetch/libexecinfo /home/builder/libexecinfo
 COPY --from=fetcher /fetch/llvmorg /home/builder/llvmorg
 COPY --from=fetcher /fetch/libarchive /home/builder/libarchive
 
 # provenance ENV (kept intentionally)
+ENV LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.1"}
+ENV LIBEXECINFO_URL="https://github.com/reactive-firewall/libexecinfo/raw/refs/tags/v${LIBEXECINFO_VERSION}/libexecinfo-${LIBEXECINFO_VERSION}r.tar.bz2"
 ENV LLVM_VERSION=${LLVM_VERSION}
 ENV LLVM_URL="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VERSION}.tar.gz"
 ENV TAR_VERSION=${TAR_VERSION}
@@ -112,13 +127,18 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
     zlib-dev \
     libbsd-dev \
     zip \
-    build-base \
-    libexecinfo-dev
+    build-base
 
 # Optional: install minimal compression libs you need, else disable them in CMake
 # apk add --no-cache xz-dev bzip2-dev zlib-dev zstd-dev lz4-dev
 
 WORKDIR /home/builder
+
+# Build libexecinfo
+RUN cd /home/builder/libexecinfo && \
+    make && \
+    ./install.sh && \
+    cd /home/builder
 
 # Build LLVM (monorepo layout: projects under llvmorg/)
 RUN mkdir -p /home/builder/llvm && \
