@@ -128,6 +128,7 @@ RUN mkdir -p /home/builder/llvm && \
       -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
       -DLLVM_ENABLE_RUNTIMES="" \
       -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang \
+      -DLLVM_TOOL_COMPILER_RT_BUILD_GWP_ASAN=OFF \
       ../llvm && \
     cmake --build . --target install --parallel $(nproc)
 
