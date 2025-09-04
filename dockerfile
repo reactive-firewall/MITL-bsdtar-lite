@@ -137,6 +137,7 @@ WORKDIR /home/builder
 # Build libexecinfo
 RUN cd /home/builder/libexecinfo && \
     make && \
+    chmod 755 ./install.sh && \
     ./install.sh && \
     cd /home/builder
 
