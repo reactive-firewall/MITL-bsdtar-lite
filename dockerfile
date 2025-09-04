@@ -90,6 +90,7 @@ ENV BSD=/usr/include/bsd
 # curl - curl License / MIT
 # zlib-dev - zlib license
 # zip - Info-ZIP license
+# libexecinfo-dev - BSD-2-Clause
 LABEL org.opencontainers.image.vendor="individual"
 LABEL org.opencontainers.image.licenses="Apache-2.0 AND zlib AND Info-ZIP"
 
@@ -111,7 +112,8 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
     zlib-dev \
     libbsd-dev \
     zip \
-    build-base
+    build-base \
+    libexecinfo-dev
 
 # Optional: install minimal compression libs you need, else disable them in CMake
 # apk add --no-cache xz-dev bzip2-dev zlib-dev zstd-dev lz4-dev
@@ -128,7 +130,6 @@ RUN mkdir -p /home/builder/llvm && \
       -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
       -DLLVM_ENABLE_RUNTIMES="" \
       -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang \
-      -DLLVM_TOOL_COMPILER_RT_BUILD_GWP_ASAN=OFF \
       ../llvm && \
     cmake --build . --target install --parallel $(nproc)
 
