@@ -2,7 +2,7 @@
 
 # version is passed through by Docker.
 # shellcheck disable=SC2154
-ARG LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.1"}
+ARG LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.2"}
 
 # version is passed through by Docker.
 # shellcheck disable=SC2154
@@ -19,7 +19,7 @@ ARG TAR_VERSION=${TAR_VERSION:-"3.8.1"}
 FROM --platform="linux/${TARGETARCH}" alpine:latest AS fetcher
 
 # Set environment variables
-ENV LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.1"}
+ENV LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.2"}
 ENV LIBEXECINFO_URL="https://github.com/reactive-firewall/libexecinfo/raw/refs/tags/v${LIBEXECINFO_VERSION}/libexecinfo-${LIBEXECINFO_VERSION}r.tar.bz2"
 ENV LLVM_VERSION=${LLVM_VERSION:-"21.1.0"}
 ENV LLVM_URL="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VERSION}.tar.gz"
@@ -78,7 +78,7 @@ COPY --from=fetcher /fetch/llvmorg /home/builder/llvmorg
 COPY --from=fetcher /fetch/libarchive /home/builder/libarchive
 
 # provenance ENV (kept intentionally)
-ENV LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.1"}
+ENV LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.2"}
 ENV LIBEXECINFO_URL="https://github.com/reactive-firewall/libexecinfo/raw/refs/tags/v${LIBEXECINFO_VERSION}/libexecinfo-${LIBEXECINFO_VERSION}r.tar.bz2"
 ENV LLVM_VERSION=${LLVM_VERSION}
 ENV LLVM_URL="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VERSION}.tar.gz"
@@ -148,8 +148,10 @@ RUN mkdir -p /home/builder/llvm && \
     cmake -GNinja \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
-      -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
-      -DLLVM_ENABLE_RUNTIMES="" \
+      -DLLVM_ENABLE_RUNTIMES="compiler-rt" \
+      -DLLVM_ENABLE_PROJECTS="clang;lld" \
+      -DLIBCXX_USE_COMPILER_RT=YES \
+      -DLIBCXXABI_USE_COMPILER_RT=YES \
       -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang \
       ../llvm && \
     cmake --build . --target install --parallel $(nproc)
