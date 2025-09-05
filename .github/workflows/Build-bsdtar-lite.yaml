@@ -114,7 +114,7 @@ jobs:
           tags: ghcr.io/reactive-firewall/mitl-bsdtar-lite
           platforms: linux/${{ matrix.architecture }}
           build-args: |
-            LIBEXECINFO_VERSION=1.2
+            LIBEXECINFO_VERSION=1.3
             LLVM_VERSION=21.1.0
             TAR_VERSION=3.8.1
             TARGETARCH=${{ matrix.architecture }}
@@ -134,7 +134,7 @@ jobs:
           outputs: type=image,push-by-digest=true,name-canonical=true,push=true,annotation-index.org.opencontainers.image.description=Pre-Stage MITL BSDtar build image ${{ matrix.architecture }}
         env:
           SOURCE_DATE_EPOCH: ${{ needs.seed.outputs.timestamp }}
-          LIBEXECINFO_VERSION: "1.2"
+          LIBEXECINFO_VERSION: "1.3"
           LLVM_VERSION: "21.1.0"
           TAR_VERSION: "3.8.1"
           TARGETARCH: ${{ matrix.architecture }}
