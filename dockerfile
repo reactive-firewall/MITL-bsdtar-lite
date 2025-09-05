@@ -115,6 +115,11 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
     cmd:bash \
     clang \
     lld \
+    cmd:lld \
+    cmd:llvm-ar \
+    cmd:llvm-otool \
+    cmd:llvm-nm \
+    cmd:llvm-strip \
     llvm \
     cmake \
     make \
@@ -134,6 +139,9 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
 
 WORKDIR /home/builder
 
+# make clang -fuse-ld=lld driver test succeed
+RUN ln -sf "$(command -v ld.lld)" /usr/local/bin/lld || true
+
 # Build libexecinfo
 RUN cd /home/builder/libexecinfo && \
     make && \
@@ -152,7 +160,7 @@ RUN mkdir -p /home/builder/llvm && \
       -DLLVM_ENABLE_PROJECTS="clang;lld" \
       -DLIBCXX_USE_COMPILER_RT=YES \
       -DLIBCXXABI_USE_COMPILER_RT=YES \
-      -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang \
+      -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_LINKER=/usr/local/bin/lld \
       ../llvm && \
     cmake --build . --target install --parallel $(nproc)
 
