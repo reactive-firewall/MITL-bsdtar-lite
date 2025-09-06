@@ -156,6 +156,7 @@ RUN mkdir -p /home/builder/llvm && \
     cmake -GNinja \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
+      -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGETARCH:-unknown}-none-musl" \
       -DLLVM_ENABLE_RUNTIMES="compiler-rt" \
       -DLLVM_ENABLE_PROJECTS="clang;lld" \
       -DLIBCXX_USE_COMPILER_RT=YES \
