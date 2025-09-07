@@ -153,16 +153,16 @@ jobs:
           annotations: |
             index.org.opencontainers.image.title=MITL-BSDtar-lite
             index.org.opencontainers.image.authors=mitl-maintainers@users.noreply.github.com
-            index.org.opencontainers.image.description=Pre-Stage MITL BSDtar build image
+            index.org.opencontainers.image.description='Pre-Stage MITL BSDtar build image'
             index.org.opencontainers.image.vendor=individual
-          outputs: type=image,push-by-digest=true,name-canonical=true,push=true,annotation-index.org.opencontainers.image.description=Pre-Stage MITL BSDtar build image ${{ matrix.architecture }}
+          outputs: type=image,push-by-digest=true,name-canonical=true,push=true,annotation-index.org.opencontainers.image.description='Pre-Stage MITL BSDtar build image ${{ matrix.architecture }}'
         env:
+          TARGET_TRIPLE: ${{ steps.prep_output.outputs.target-triple }}
           SOURCE_DATE_EPOCH: ${{ needs.seed.outputs.timestamp }}
           LIBEXECINFO_VERSION: "1.3"
           LLVM_VERSION: "21.1.0"
           TAR_VERSION: "3.8.1"
           TARGETARCH: ${{ matrix.architecture }}
-          TARGET_TRIPLE: ${{ steps.prep_output.outputs.target-triple }}
       - name: Export digest
         run: |
           mkdir -p ${{ runner.temp }}/digests
