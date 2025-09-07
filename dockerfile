@@ -36,7 +36,7 @@ ENV LDFLAGS="-fuse-ld=lld"
 # ca-certificates - MPL AND MIT - do not bundle - just to verify certificates (weak)
 # alpine - MIT - do not bundle - just need an OS (weak)
 # curl - curl License / MIT (direct)
-# bsdtar - BSD-2 - used to unarchive during bootstrap (transiant)
+# bsdtar - BSD-2 - used to unarchive during bootstrap (transient)
 LABEL org.opencontainers.image.vendor="individual"
 LABEL org.opencontainers.image.licenses="cURL Apache-2.0 AND MPL"
 
@@ -84,6 +84,7 @@ ENV LLVM_VERSION=${LLVM_VERSION}
 ENV LLVM_URL="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VERSION}.tar.gz"
 ENV TAR_VERSION=${TAR_VERSION}
 ENV LIBARCHIVE_URL="https://github.com/libarchive/libarchive/archive/refs/tags/v${TAR_VERSION}.tar.gz"
+ENV TARGET_TRIPLE=${TARGET_TRIPLE}
 ENV PATH="/usr/local/bin:/home/builder/llvm/bin:$PATH"
 ENV CC=clang
 ENV CXX=clang++
@@ -156,14 +157,15 @@ RUN mkdir -p /home/builder/llvm && \
     cmake -GNinja \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
-      -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGETARCH:-unknown}-none-musl" \
+      -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET_TRIPLE}" \
       -DLLVM_ENABLE_RUNTIMES="compiler-rt" \
-      -DLLVM_ENABLE_PROJECTS="clang;lld" \
-      -DLIBCXX_USE_COMPILER_RT=YES \
-      -DLIBCXXABI_USE_COMPILER_RT=YES \
+      -DLLVM_ENABLE_PROJECTS="clang;lld;libcxx;libcxxabi" \
       -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_LINKER=/usr/local/bin/lld \
+      -DCMAKE_CXX_COMPILER=clang++ \
+      -DLLVM_PARALLEL_LINK_JOBS=1 \
+      -DLIBCXX_USE_COMPILER_RT=ON -DLIBCXXABI_USE_COMPILER_RT=ON \
       ../llvm && \
-    cmake --build . --target install --parallel $(nproc)
+    cmake --build . --target install --parallel 3
 
 # Ensure new toolchain is first in PATH
 ENV PATH=/home/builder/llvm/bin:$PATH

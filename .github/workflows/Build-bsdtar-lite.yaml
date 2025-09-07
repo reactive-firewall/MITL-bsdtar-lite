@@ -70,9 +70,30 @@ jobs:
           submodules: false
 
       - name: Prepare
+        id: prep_output
         run: |
           platform=linux/${{ matrix.architecture }}
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          if [ "${{ matrix.architecture }}" == "amd64" ]; then
+            echo "TARGET_TRIPLE=x86_64-none-musl" >> $GITHUB_ENV
+          elif [ "${{ matrix.architecture }}" == "arm64" ]; then
+            echo "TARGET_TRIPLE=aarch64-none-musl" >> $GITHUB_ENV
+          elif [ "${{ matrix.architecture }}" == "arm" ]; then
+            echo "TARGET_TRIPLE=arm-none-musleabi" >> $GITHUB_ENV
+          else
+            echo "Unsupported architecture: ${{ matrix.architecture }}"
+            exit 1
+          fi
+          echo "target-triple=${TARGET_TRIPLE}" >> "$GITHUB_OUTPUT"
+
+      - name: Create swap
+        id: swap_8g_on
+        run: |
+          sudo fallocate -l 8G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          sudo -k 2>/dev/null ;
 
       - name: Set up QEMU for multi-architecture builds
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
@@ -118,6 +139,7 @@ jobs:
             LLVM_VERSION=21.1.0
             TAR_VERSION=3.8.1
             TARGETARCH=${{ matrix.architecture }}
+            TARGET_TRIPLE=${{ steps.prep_output.outputs.target-triple }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           attests: |
@@ -138,6 +160,7 @@ jobs:
           LLVM_VERSION: "21.1.0"
           TAR_VERSION: "3.8.1"
           TARGETARCH: ${{ matrix.architecture }}
+          TARGET_TRIPLE: ${{ steps.prep_output.outputs.target-triple }}
       - name: Export digest
         run: |
           mkdir -p ${{ runner.temp }}/digests
@@ -145,7 +168,19 @@ jobs:
           touch "${{ runner.temp }}/digests/${digest#sha256:}"
 
       - name: Logout from Docker Hub
+        if: always()
         run: docker logout
+
+      - name: Remove swap
+        id: swap_8g_off
+        if: always()
+        run: |
+          sudo swapoff /swapfile
+          sudo dd if=/dev/zero of=/swapfile bs=1M status=progress || sudo sh -c 'cat /dev/zero > /swapfile'
+          sudo sync ;
+          sudo rm /swapfile ;
+          sudo sync ;
+          sudo -k 2>/dev/null ;
 
       - name: Upload digest
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
