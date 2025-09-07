@@ -75,6 +75,7 @@ FROM --platform="linux/${TARGETARCH}" alpine:latest AS pre-bsdtar-builder
 # copy ONLY fetched source
 COPY --from=fetcher /fetch/libexecinfo /home/builder/libexecinfo
 COPY --from=fetcher /fetch/llvmorg /home/builder/llvmorg
+RUN mkdir -p /home/builder/llvmorg/libc/config/baremetal/x86_64
 COPY x86_64_musl_entrypoints.txt /home/builder/llvmorg/libc/config/baremetal/x86_64/entrypoints.txt
 COPY --from=fetcher /fetch/libarchive /home/builder/libarchive
 
