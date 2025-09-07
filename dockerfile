@@ -158,12 +158,19 @@ RUN mkdir -p /home/builder/llvm && \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
       -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET_TRIPLE}" \
-      -DLLVM_ENABLE_RUNTIMES="compiler-rt" \
-      -DLLVM_ENABLE_PROJECTS="clang;lld;libcxx;libcxxabi" \
+      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi" \
+      -DLLVM_ENABLE_PROJECTS="clang;lld;libc" \
+      -DLIBCXX_USE_COMPILER_RT=ON \
+      -DLIBCXXABI_USE_COMPILER_RT=ON \
+      -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+      -DLIBCXX_HAS_MUSL_LIBC=ON \
+      -DLIBCXX_ENABLE_SHARED=OFF \
+      -DLIBCXX_ENABLE_STATIC=ON \
+      -DLIBCXXABI_ENABLE_SHARED=OFF \
+      -DLIBCXXABI_ENABLE_STATIC=ON \
       -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_LINKER=/usr/local/bin/lld \
       -DCMAKE_CXX_COMPILER=clang++ \
       -DLLVM_PARALLEL_LINK_JOBS=1 \
-      -DLIBCXX_USE_COMPILER_RT=ON -DLIBCXXABI_USE_COMPILER_RT=ON \
       ../llvm && \
     cmake --build . --target install --parallel 3
 
