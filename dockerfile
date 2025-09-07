@@ -158,8 +158,8 @@ RUN mkdir -p /home/builder/llvm && \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
       -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET_TRIPLE}" \
-      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi" \
-      -DLLVM_ENABLE_PROJECTS="clang;lld;libc" \
+      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libc;libcxx;libcxxabi" \
+      -DLLVM_ENABLE_PROJECTS="clang;lld" \
       -DLIBCXX_USE_COMPILER_RT=ON \
       -DLIBCXXABI_USE_COMPILER_RT=ON \
       -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
@@ -170,9 +170,8 @@ RUN mkdir -p /home/builder/llvm && \
       -DLIBCXXABI_ENABLE_STATIC=ON \
       -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_LINKER=/usr/local/bin/lld \
       -DCMAKE_CXX_COMPILER=clang++ \
-      -DLLVM_PARALLEL_LINK_JOBS=1 \
       ../llvm && \
-    cmake --build . --target install --parallel 3
+    cmake --build . --target install
 
 # Ensure new toolchain is first in PATH
 ENV PATH=/home/builder/llvm/bin:$PATH

@@ -176,7 +176,7 @@ jobs:
         if: always()
         run: |
           sudo swapoff /swapfile
-          sudo dd if=/dev/zero of=/swapfile bs=1M status=progress || sudo sh -c 'cat /dev/zero > /swapfile'
+          sudo dd if=/dev/zero of=/swapfile bs=1M status=progress count=8192 || sudo sh -c 'cat /dev/zero > /swapfile'
           sudo sync ;
           sudo rm /swapfile ;
           sudo sync ;
