@@ -76,15 +76,17 @@ jobs:
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
           if [ "${{ matrix.architecture }}" == "amd64" ]; then
             echo "TARGET_TRIPLE=x86_64-none-musl" >> $GITHUB_ENV
+            echo "target-triple=x86_64-none-musl" >> "$GITHUB_OUTPUT"
           elif [ "${{ matrix.architecture }}" == "arm64" ]; then
             echo "TARGET_TRIPLE=aarch64-none-musl" >> $GITHUB_ENV
+            echo "target-triple=aarch64-none-musl" >> "$GITHUB_OUTPUT"
           elif [ "${{ matrix.architecture }}" == "arm" ]; then
             echo "TARGET_TRIPLE=arm-none-musleabi" >> $GITHUB_ENV
+            echo "target-triple=arm-none-musleabi" >> "$GITHUB_OUTPUT"
           else
             echo "Unsupported architecture: ${{ matrix.architecture }}"
             exit 1
           fi
-          echo "target-triple=${TARGET_TRIPLE}" >> "$GITHUB_OUTPUT"
 
       - name: Create swap
         id: swap_8g_on

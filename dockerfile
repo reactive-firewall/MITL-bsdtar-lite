@@ -12,6 +12,10 @@ ARG LLVM_VERSION=${LLVM_VERSION:-"21.1.0"}
 # shellcheck disable=SC2154
 ARG TAR_VERSION=${TAR_VERSION:-"3.8.1"}
 
+# version is passed through by Docker.
+# shellcheck disable=SC2154
+ARG TARGET_TRIPLE
+
 # ---- fetcher stage: install and cache required Alpine packages and fetch release tarballs ----
 
 # Use MIT licensed Alpine as the base image for the build environment
