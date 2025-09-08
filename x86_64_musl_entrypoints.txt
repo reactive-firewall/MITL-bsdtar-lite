@@ -1,49 +1,97 @@
-# amd64 (x86_64) bare-metal entrypoints — musl-oriented, one symbol per line
-_start
-_start_c
-__libc_start_main
-__libc_init
-__libc_fini
-_exit
-_abort
-__stack_chk_fail
-__stack_chk_guard
-__cxa_atexit
-atexit
-atexit_lock
-__register_frame
-__deregister_frame
-__cxa_finalize
-__cxa_begin_catch
-__cxa_end_catch
-malloc
-free
-calloc
-realloc
-memcpy
-memmove
-memset
-memcmp
-memchr
-strlen
-strcpy
-strncpy
-strcat
-strncat
-strcmp
-strncmp
-puts
-write
-read
-open
-close
-lseek
-brk
-sbrk
-__errno_location
-__gettimeofday
-clock_gettime
-__assert_fail
-__stack_chk_guard_setup
-__aeabi_unwind_cpp_pr0
-__aeabi_unwind_cpp_pr1
+set(TARGET_LIBC_ENTRYPOINTS
+    # ctype.h entrypoints
+    libc.src.ctype.isalnum
+    libc.src.ctype.isalpha
+    libc.src.ctype.isascii
+    libc.src.ctype.isblank
+    libc.src.ctype.iscntrl
+    libc.src.ctype.isdigit
+    libc.src.ctype.isgraph
+    libc.src.ctype.islower
+    libc.src.ctype.isprint
+    libc.src.ctype.ispunct
+    libc.src.ctype.isspace
+    libc.src.ctype.isupper
+    libc.src.ctype.isxdigit
+    libc.src.ctype.toascii
+    libc.src.ctype.tolower
+    libc.src.ctype.toupper
+
+    # string.h entrypoints
+    libc.src.string.memccpy
+    libc.src.string.memchr
+    libc.src.string.memcmp
+    libc.src.string.memcpy
+    libc.src.string.memmem
+    libc.src.string.memmove
+    libc.src.string.mempcpy
+    libc.src.string.memrchr
+    libc.src.string.memset
+    libc.src.string.stpcpy
+    libc.src.string.stpncpy
+    libc.src.string.strcat
+    libc.src.string.strchr
+    libc.src.string.strchrnul
+    libc.src.string.strcmp
+    libc.src.string.strcpy
+    libc.src.string.strcspn
+    libc.src.string.strlcat
+    libc.src.string.strlcpy
+    libc.src.string.strlen
+    libc.src.string.strncat
+    libc.src.string.strncmp
+    libc.src.string.strncpy
+    libc.src.string.strnlen
+    libc.src.string.strpbrk
+    libc.src.string.strrchr
+    libc.src.string.strspn
+    libc.src.string.strstr
+    libc.src.string.strtok
+    libc.src.string.strtok_r
+
+    # strings.h entrypoints
+    libc.src.strings.bcmp
+    libc.src.strings.bzero
+
+    # inttypes.h entrypoints
+    libc.src.inttypes.imaxabs
+    libc.src.inttypes.imaxdiv
+    libc.src.inttypes.strtoimax
+    libc.src.inttypes.strtoumax
+
+    # stdlib.h entrypoints
+    libc.src.stdlib.abs
+    libc.src.stdlib.atof
+    libc.src.stdlib.atol
+    libc.src.stdlib.atoll
+    libc.src.stdlib.bsearch
+    libc.src.stdlib.div
+    libc.src.stdlib.labs
+    libc.src.stdlib.ldiv
+    libc.src.stdlib.llabs
+    libc.src.stdlib.lldiv
+    libc.src.stdlib.memalignment
+    libc.src.stdlib.qsort
+    libc.src.stdlib.strtod
+    libc.src.stdlib.strtof
+    libc.src.stdlib.strtol
+    libc.src.stdlib.strtold
+    libc.src.stdlib.strtoll
+    libc.src.stdlib.strtoul
+    libc.src.stdlib.strtoull
+
+    # stdlib.h external entrypoints
+    libc.src.stdlib.malloc
+    libc.src.stdlib.calloc
+    libc.src.stdlib.realloc
+    libc.src.stdlib.free
+)
+
+set(TARGET_LIBM_ENTRYPOINTS
+  # disabled for now
+)
+
+set(TARGET_LLVMLIBC_ENTRYPOINTS
+  ${TARGET_LIBC_ENTRYPOINTS}
+  ${TARGET_LIBM_ENTRYPOINTS}
+)

@@ -77,6 +77,7 @@ COPY --from=fetcher /fetch/libexecinfo /home/builder/libexecinfo
 COPY --from=fetcher /fetch/llvmorg /home/builder/llvmorg
 RUN mkdir -p /home/builder/llvmorg/libc/config/baremetal/x86_64
 COPY x86_64_musl_entrypoints.txt /home/builder/llvmorg/libc/config/baremetal/x86_64/entrypoints.txt
+COPY x86_64_musl_headers.txt /home/builder/llvmorg/libc/config/baremetal/x86_64/headers.txt
 COPY --from=fetcher /fetch/libarchive /home/builder/libarchive
 
 ARG TARGET_TRIPLE
