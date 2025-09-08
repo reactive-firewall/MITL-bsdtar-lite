@@ -121,12 +121,13 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
     cmd:bash \
     clang \
     lld \
+    llvm \
     cmd:lld \
     cmd:llvm-ar \
     cmd:llvm-otool \
     cmd:llvm-nm \
     cmd:llvm-strip \
-    llvm \
+    llvm-runtimes \
     cmake \
     make \
     ninja-build \
@@ -167,7 +168,6 @@ RUN mkdir -p /home/builder/llvm && \
       -DLLVM_ENABLE_PROJECTS="clang;lld" \
       -DLIBCXX_USE_COMPILER_RT=ON \
       -DLIBCXXABI_USE_COMPILER_RT=ON \
-      -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
       -DLIBCXX_ENABLE_SHARED=OFF \
       -DLIBCXX_ENABLE_STATIC=ON \

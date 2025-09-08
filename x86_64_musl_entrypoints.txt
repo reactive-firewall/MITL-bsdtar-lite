@@ -56,14 +56,17 @@ set(TARGET_LIBC_ENTRYPOINTS
     # inttypes.h entrypoints
     libc.src.inttypes.imaxabs
     libc.src.inttypes.imaxdiv
-    libc.src.inttypes.strtoimax
-    libc.src.inttypes.strtoumax
+    # libc.src.inttypes.strtoimax is currently disabled for musl
+    #libc.src.inttypes.strtoimax
+    # libc.src.inttypes.strtoumax is currently disabled for musl
+    #libc.src.inttypes.strtoumax
 
     # stdlib.h entrypoints
     libc.src.stdlib.abs
-    libc.src.stdlib.atof
-    libc.src.stdlib.atol
-    libc.src.stdlib.atoll
+    # libc.src.stdlib.ato* are currently disabled for musl
+    #libc.src.stdlib.atof
+    #libc.src.stdlib.atol
+    #libc.src.stdlib.atoll
     libc.src.stdlib.bsearch
     libc.src.stdlib.div
     libc.src.stdlib.labs
@@ -72,19 +75,21 @@ set(TARGET_LIBC_ENTRYPOINTS
     libc.src.stdlib.lldiv
     libc.src.stdlib.memalignment
     libc.src.stdlib.qsort
-    libc.src.stdlib.strtod
-    libc.src.stdlib.strtof
-    libc.src.stdlib.strtol
-    libc.src.stdlib.strtold
-    libc.src.stdlib.strtoll
-    libc.src.stdlib.strtoul
-    libc.src.stdlib.strtoull
+    # libc.src.stdlib.strto* are currently disabled for musl
+    #libc.src.stdlib.strtod
+    #libc.src.stdlib.strtof
+    #libc.src.stdlib.strtol
+    #libc.src.stdlib.strtold
+    #libc.src.stdlib.strtoll
+    #libc.src.stdlib.strtoul
+    #libc.src.stdlib.strtoull
 
     # stdlib.h external entrypoints
-    libc.src.stdlib.malloc
-    libc.src.stdlib.calloc
-    libc.src.stdlib.realloc
-    libc.src.stdlib.free
+    # external entrypoints are currently disabled for musl
+    #libc.src.stdlib.malloc
+    #libc.src.stdlib.calloc
+    #libc.src.stdlib.realloc
+    #libc.src.stdlib.free
 )
 
 set(TARGET_LIBM_ENTRYPOINTS
