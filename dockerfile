@@ -164,11 +164,15 @@ RUN mkdir -p /home/builder/llvm && \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
       -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET_TRIPLE}" \
-      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libc;libcxx;libcxxabi" \
+      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libc;libcxx;libcxxabi" \
       -DLLVM_ENABLE_PROJECTS="clang;lld" \
       -DLIBCXX_USE_COMPILER_RT=ON \
       -DLIBCXXABI_USE_COMPILER_RT=ON \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
+      -DLIBUNWIND_ENABLE_SHARED=OFF \
+      -DLIBUNWIND_ENABLE_STATIC=ON \
+      -DLIBCXX_ENABLE_SHARED=OFF \
+      -DLIBCXX_ENABLE_STATIC=ON \
       -DLIBCXX_ENABLE_SHARED=OFF \
       -DLIBCXX_ENABLE_STATIC=ON \
       -DLIBCXXABI_ENABLE_SHARED=OFF \
