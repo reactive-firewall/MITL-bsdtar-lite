@@ -157,18 +157,21 @@ RUN cd /home/builder/libexecinfo && \
     cd /home/builder
 
 # Build LLVM (monorepo layout: projects under llvmorg/)
+# Use static for libs based on https://discourse.llvm.org/t/issues-when-building-llvm-clang-from-trunk/70323
 RUN mkdir -p /home/builder/llvm && \
     mkdir -p /home/builder/llvmorg/llvm-build && \
     cd /home/builder/llvmorg/llvm-build && \
-    cmake -GNinja \
+    cmake -S ../llvm -B . -GNinja -Wno-dev \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
       -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET_TRIPLE}" \
       -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libc;libcxx;libcxxabi" \
-      -DLLVM_ENABLE_PROJECTS="clang;lld" \
+      -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld;lldb" \
       -DLIBCXX_USE_COMPILER_RT=ON \
       -DLIBCXXABI_USE_COMPILER_RT=ON \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DLLVM_ENABLE_BINDINGS=OFF -DLLVM_BUILD_TESTS=OFF \
       -DLIBUNWIND_ENABLE_SHARED=OFF \
       -DLIBUNWIND_ENABLE_STATIC=ON \
       -DLIBCXX_ENABLE_SHARED=OFF \
@@ -178,8 +181,7 @@ RUN mkdir -p /home/builder/llvm && \
       -DLIBCXXABI_ENABLE_SHARED=OFF \
       -DLIBCXXABI_ENABLE_STATIC=ON \
       -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_LINKER=/usr/local/bin/lld \
-      -DCMAKE_CXX_COMPILER=clang++ \
-      ../llvm && \
+      -DCMAKE_CXX_COMPILER=clang++ && \
     cmake --build . --target install
 
 # Ensure new toolchain is first in PATH
