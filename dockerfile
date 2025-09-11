@@ -167,6 +167,7 @@ RUN mkdir -p /home/builder/llvm && \
       -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET_TRIPLE}" \
       -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libc;libcxx;libcxxabi" \
       -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld;lldb" \
+      -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
       -DLIBCXX_USE_COMPILER_RT=ON \
       -DLIBCXXABI_USE_COMPILER_RT=ON \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
@@ -182,7 +183,7 @@ RUN mkdir -p /home/builder/llvm && \
       -DLIBCXXABI_ENABLE_STATIC=ON \
       -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_LINKER=/usr/local/bin/lld \
       -DCMAKE_CXX_COMPILER=clang++ && \
-    cmake --build . --target install
+    cmake --build . -j$(nproc) --target install
 
 # Ensure new toolchain is first in PATH
 ENV PATH=/home/builder/llvm/bin:$PATH
