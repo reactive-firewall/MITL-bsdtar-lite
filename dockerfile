@@ -6,7 +6,7 @@ ARG LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.3"}
 
 # version is passed through by Docker.
 # shellcheck disable=SC2154
-ARG LLVM_VERSION=${LLVM_VERSION:-"21.1.0"}
+ARG LLVM_VERSION=${LLVM_VERSION:-"21.1.1"}
 
 # version is passed through by Docker.
 # shellcheck disable=SC2154
@@ -21,7 +21,7 @@ FROM --platform="linux/${TARGETARCH}" alpine:latest AS fetcher
 # Set environment variables
 ENV LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.3"}
 ENV LIBEXECINFO_URL="https://github.com/reactive-firewall/libexecinfo/raw/refs/tags/v${LIBEXECINFO_VERSION}/libexecinfo-${LIBEXECINFO_VERSION}r.tar.bz2"
-ENV LLVM_VERSION=${LLVM_VERSION:-"21.1.0"}
+ENV LLVM_VERSION=${LLVM_VERSION:-"21.1.1"}
 ENV LLVM_URL="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VERSION}.tar.gz"
 ENV TAR_VERSION=${TAR_VERSION:-"3.8.1"}
 ENV LIBARCHIVE_URL="https://github.com/libarchive/libarchive/archive/refs/tags/v${TAR_VERSION}.tar.gz"
@@ -228,7 +228,7 @@ RUN mkdir -p /out/bin && cp build/bsdtar /out/bin/bsdtar
 # Final artifact stage: copy bsdtar
 FROM scratch AS mitl-bsdtar-lite
 
-LABEL version="20250902"
+LABEL version="20250916"
 LABEL org.opencontainers.image.title="MITL-BSDtar-lite"
 LABEL org.opencontainers.image.description="Hermetically built BSD tar."
 LABEL org.opencontainers.image.vendor="individual"
