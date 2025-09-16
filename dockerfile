@@ -165,7 +165,7 @@ RUN mkdir -p /home/builder/llvm && \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
       -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET_TRIPLE}" \
-      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libc;libcxx;libcxxabi" \
+      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libc;libcxx" \
       -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld;lldb" \
       -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
       -DLIBCXX_USE_COMPILER_RT=ON \
