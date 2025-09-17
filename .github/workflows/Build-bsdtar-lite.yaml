@@ -99,7 +99,7 @@ jobs:
 
       - name: Create swap
         id: swap_8g_on
-        if: ${{ env.USE_SWAP && !cancelled() }}
+        if: ${{ (env.USE_SWAP == 'true') && !cancelled() }}
         run: |
           sudo fallocate -l 8G /swapfile
           sudo chmod 600 /swapfile
@@ -187,7 +187,7 @@ jobs:
 
       - name: Remove swap
         id: swap_8g_off
-        if: ${{ env.USE_SWAP && always() }}
+        if: ${{ (env.USE_SWAP == 'true') && always() }}
         run: |
           sudo swapoff /swapfile
           sudo dd if=/dev/zero of=/swapfile bs=1M status=progress count=8192 || sudo sh -c 'cat /dev/zero > /swapfile'
