@@ -90,13 +90,14 @@ ENV LLVM_VERSION=${LLVM_VERSION}
 ENV LLVM_URL="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VERSION}.tar.gz"
 ENV TAR_VERSION=${TAR_VERSION}
 ENV LIBARCHIVE_URL="https://github.com/libarchive/libarchive/archive/refs/tags/v${TAR_VERSION}.tar.gz"
-ENV PATH="/usr/local/bin:/home/builder/llvm/bin:$PATH"
+ENV PATH="/home/builder/llvm/bin:/usr/local/bin:$PATH"
 ENV CC=clang
 ENV CXX=clang++
 ENV AR=llvm-ar
 ENV RANLIB=llvm-ranlib
 ENV LD=lld
 ENV LDFLAGS="-fuse-ld=lld"
+ENV STRIP=llvm-strip
 ENV BSD=/usr/include/bsd
 
 # Install necessary packages
@@ -133,13 +134,11 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
     ninja-build \
     cmd:ninja \
     cmd:clang++ \
-    libc6-compat \
     musl-dev \
     pkgconfig \
     zlib-dev \
     libbsd-dev \
-    zip \
-    build-base
+    zip
 
 # Optional: install minimal compression libs you need, else disable them in CMake
 # apk add --no-cache xz-dev bzip2-dev zlib-dev zstd-dev lz4-dev
@@ -164,12 +163,18 @@ RUN mkdir -p /home/builder/llvm && \
     cmake -S ./llvm -B ./llvm-build -GNinja -Wno-dev \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_CXX_COMPILER=clang++ \
+      -DLLVM_USE_LINKER=lld \
+      -DCMAKE_LINKER=/usr/local/bin/lld \
+      -DCMAKE_AR=/usr/local/bin/llvm-ar \
+      -DCMAKE_RANLIB=/usr/local/bin/llvm-ranlib \
       -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET_TRIPLE}" \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
-      -DLIBCXX_USE_COMPILER_RT=ON \
-      -DLIBCXXABI_USE_COMPILER_RT=ON \
-      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx" \
-      -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld;lldb" \
+      -DLIBCXX_USE_COMPILER_RT=OFF \
+      -DLIBCXXABI_USE_COMPILER_RT=OFF \
+      -DLLVM_ENABLE_RUNTIMES="libunwind;libcxx;libcxxabi" \
+      -DLLVM_ENABLE_PROJECTS="clang;lld" \
       -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
       -DBUILD_SHARED_LIBS=OFF \
       -DLLVM_ENABLE_BINDINGS=OFF -DLLVM_BUILD_TESTS=OFF \
@@ -180,9 +185,7 @@ RUN mkdir -p /home/builder/llvm && \
       -DLIBCXX_ENABLE_SHARED=OFF \
       -DLIBCXX_ENABLE_STATIC=ON \
       -DLIBCXXABI_ENABLE_SHARED=OFF \
-      -DLIBCXXABI_ENABLE_STATIC=ON \
-      -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_LINKER=/usr/local/bin/lld \
-      -DCMAKE_CXX_COMPILER=clang++
+      -DLIBCXXABI_ENABLE_STATIC=ON
 
 # Build LLVM (monorepo layout: projects under llvmorg/)
 RUN cd /home/builder/llvmorg/ && \
