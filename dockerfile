@@ -90,7 +90,7 @@ ENV LLVM_VERSION=${LLVM_VERSION}
 ENV LLVM_URL="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VERSION}.tar.gz"
 ENV TAR_VERSION=${TAR_VERSION}
 ENV LIBARCHIVE_URL="https://github.com/libarchive/libarchive/archive/refs/tags/v${TAR_VERSION}.tar.gz"
-ENV PATH="/home/builder/llvm/bin:/usr/local/bin:$PATH"
+ENV PATH="/home/builder/llvm/bin:/usr/bin:/usr/local/bin:$PATH"
 ENV CC=clang
 ENV CXX=clang++
 ENV AR=llvm-ar
@@ -167,8 +167,8 @@ RUN mkdir -p /home/builder/llvm && \
       -DCMAKE_CXX_COMPILER=clang++ \
       -DLLVM_USE_LINKER=lld \
       -DCMAKE_LINKER=/usr/local/bin/lld \
-      -DCMAKE_AR=/usr/local/bin/llvm-ar \
-      -DCMAKE_RANLIB=/usr/local/bin/llvm-ranlib \
+      -DCMAKE_AR=/usr/bin/llvm-ar \
+      -DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
       -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET_TRIPLE}" \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
       -DLIBCXX_USE_COMPILER_RT=OFF \
@@ -224,7 +224,7 @@ RUN mkdir -p build && cd build && \
 
 # verify staticness (keep artifact small by remove build deps after check)
 RUN set -e; \
-    if readelf -a build/bsdtar | grep -q "NEEDED"; then echo "ERROR: bsdtar is dynamically linked"; exit 1; fi; \
+    if llvm-readelf -a build/bsdtar | grep -q "NEEDED"; then echo "ERROR: bsdtar is dynamically linked"; exit 1; fi; \
     ${STRIP} --strip-all build/bsdtar
 
 # install into ephemeral dir to copy to scratch later
