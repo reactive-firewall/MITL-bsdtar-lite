@@ -133,8 +133,8 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
     ninja-build \
     cmd:ninja \
     cmd:clang++ \
-    musl-dev \
     libc6-compat \
+    musl-dev \
     pkgconfig \
     zlib-dev \
     libbsd-dev \
@@ -165,12 +165,12 @@ RUN mkdir -p /home/builder/llvm && \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
       -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET_TRIPLE}" \
-      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libc;libcxx" \
-      -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld;lldb" \
-      -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
+      -DLIBCXX_HAS_MUSL_LIBC=ON \
       -DLIBCXX_USE_COMPILER_RT=ON \
       -DLIBCXXABI_USE_COMPILER_RT=ON \
-      -DLIBCXX_HAS_MUSL_LIBC=ON \
+      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx" \
+      -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld;lldb" \
+      -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
       -DBUILD_SHARED_LIBS=OFF \
       -DLLVM_ENABLE_BINDINGS=OFF -DLLVM_BUILD_TESTS=OFF \
       -DLIBUNWIND_ENABLE_SHARED=OFF \
@@ -182,8 +182,8 @@ RUN mkdir -p /home/builder/llvm && \
       -DLIBCXXABI_ENABLE_SHARED=OFF \
       -DLIBCXXABI_ENABLE_STATIC=ON \
       -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_LINKER=/usr/local/bin/lld \
-      -DCMAKE_CXX_COMPILER=clang++ && \
-    cmake --build . -j$(nproc) --target install
+      -DCMAKE_CXX_COMPILER=clang++
+RUN cmake --build . -j$(nproc) --target install
 
 # Ensure new toolchain is first in PATH
 ENV PATH=/home/builder/llvm/bin:$PATH
