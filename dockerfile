@@ -160,8 +160,8 @@ RUN cd /home/builder/libexecinfo && \
 # Use static for libs based on https://discourse.llvm.org/t/issues-when-building-llvm-clang-from-trunk/70323
 RUN mkdir -p /home/builder/llvm && \
     mkdir -p /home/builder/llvmorg/llvm-build && \
-    cd /home/builder/llvmorg/llvm-build && \
-    cmake -S ../llvm -B . -GNinja -Wno-dev \
+    cd /home/builder/llvmorg/ && \
+    cmake -S ./llvm -B ./llvm-build -GNinja -Wno-dev \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
       -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET_TRIPLE}" \
@@ -183,7 +183,8 @@ RUN mkdir -p /home/builder/llvm && \
       -DLIBCXXABI_ENABLE_STATIC=ON \
       -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_LINKER=/usr/local/bin/lld \
       -DCMAKE_CXX_COMPILER=clang++
-RUN cmake --build . -j$(nproc) --target install
+
+RUN cmake --build ./llvm-build -j$(nproc) --target install
 
 # Ensure new toolchain is first in PATH
 ENV PATH=/home/builder/llvm/bin:$PATH
