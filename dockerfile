@@ -96,7 +96,6 @@ ENV CXX=clang++
 ENV AR=llvm-ar
 ENV RANLIB=llvm-ranlib
 ENV LD=lld
-ENV LDFLAGS="-fuse-ld=lld"
 ENV STRIP=llvm-strip
 ENV BSD=/usr/include/bsd
 
@@ -166,7 +165,7 @@ RUN mkdir -p /home/builder/llvm && \
       -DCMAKE_C_COMPILER=clang \
       -DCMAKE_CXX_COMPILER=clang++ \
       -DLLVM_USE_LINKER=lld \
-      -DCMAKE_LINKER=/usr/local/bin/lld \
+      -DCMAKE_LINKER=$(command -v ld.lld) \
       -DCMAKE_AR=/usr/bin/llvm-ar \
       -DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
       -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET_TRIPLE}" \
