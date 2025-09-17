@@ -156,7 +156,7 @@ RUN cd /home/builder/libexecinfo && \
     ./install.sh && \
     cd /home/builder
 
-# Build LLVM (monorepo layout: projects under llvmorg/)
+# Configure LLVM (monorepo layout: projects under llvmorg/)
 # Use static for libs based on https://discourse.llvm.org/t/issues-when-building-llvm-clang-from-trunk/70323
 RUN mkdir -p /home/builder/llvm && \
     mkdir -p /home/builder/llvmorg/llvm-build && \
@@ -184,7 +184,9 @@ RUN mkdir -p /home/builder/llvm && \
       -DLLVM_USE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_LINKER=/usr/local/bin/lld \
       -DCMAKE_CXX_COMPILER=clang++
 
-RUN cmake --build ./llvm-build -j$(nproc) --target install
+# Build LLVM (monorepo layout: projects under llvmorg/)
+RUN cd /home/builder/llvmorg/ && \
+    cmake --build ./llvm-build -j$(nproc) --target install
 
 # Ensure new toolchain is first in PATH
 ENV PATH=/home/builder/llvm/bin:$PATH
