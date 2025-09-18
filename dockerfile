@@ -213,7 +213,7 @@ WORKDIR /home/builder/zlib
 RUN CC="$CC" CXX="$CXX" AR="$AR" RANLIB="$RANLIB" LD="$LD" \
     CFLAGS="-O3 -fPIC -static" \
     ./configure --prefix="/usr/local" \
- && make -j"$(nproc)" \
+ && make -j"$(nproc)" libz.a \
  && make install
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
