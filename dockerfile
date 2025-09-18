@@ -209,7 +209,7 @@ RUN mkdir -p build && cd build && \
       -DENABLE_TESTS=OFF \
       -DCMAKE_EXE_LINKER_FLAGS="-static -s -fuse-ld=lld" \
       -S .. -B . && \
-    cmake --build . --target libarchive bsdtar -- -j$(nproc)
+    cmake --build . --target libarchive.a bsdtar -- -j$(nproc)
 
 # verify staticness (keep artifact small by remove build deps after check)
 RUN set -e; \
