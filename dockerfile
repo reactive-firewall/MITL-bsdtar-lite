@@ -20,15 +20,16 @@ FROM --platform="linux/${TARGETARCH}" alpine:latest AS fetcher
 
 # Set environment variables
 ARG LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.3"}
-ENV LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.3"}
+ENV LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION}
 ENV LIBEXECINFO_URL="https://github.com/reactive-firewall/libexecinfo/raw/refs/tags/v${LIBEXECINFO_VERSION}/libexecinfo-${LIBEXECINFO_VERSION}r.tar.bz2"
 ARG LLVM_VERSION=${LLVM_VERSION:-"21.1.1"}
-ENV LLVM_VERSION=${LLVM_VERSION:-"21.1.1"}
+ENV LLVM_VERSION=${LLVM_VERSION}
 ENV LLVM_URL="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VERSION}.tar.gz"
 ARG TAR_VERSION=${TAR_VERSION:-"3.8.1"}
-ENV TAR_VERSION=${TAR_VERSION:-"3.8.1"}
+ENV TAR_VERSION=${TAR_VERSION}
 ENV LIBARCHIVE_URL="https://github.com/libarchive/libarchive/archive/refs/tags/v${TAR_VERSION}.tar.gz"
-ARG ZLIB_VERSION=1.2.13
+ARG ZLIB_VERSION=${ZLIB_VERSION:-"1.3.1"}
+ENV ZLIB_VERSION=${ZLIB_VERSION}
 ENV ZLIB_URL="https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
 WORKDIR /fetch
 ENV CC=clang
@@ -95,12 +96,18 @@ ARG TARGET_TRIPLE
 ENV TARGET_TRIPLE=${TARGET_TRIPLE}
 
 # provenance ENV (kept intentionally)
-ENV LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.3"}
+ARG LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.3"}
+ENV LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION}
 ENV LIBEXECINFO_URL="https://github.com/reactive-firewall/libexecinfo/raw/refs/tags/v${LIBEXECINFO_VERSION}/libexecinfo-${LIBEXECINFO_VERSION}r.tar.bz2"
+ARG LLVM_VERSION=${LLVM_VERSION:-"21.1.1"}
 ENV LLVM_VERSION=${LLVM_VERSION}
 ENV LLVM_URL="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VERSION}.tar.gz"
+ARG TAR_VERSION=${TAR_VERSION:-"3.8.1"}
 ENV TAR_VERSION=${TAR_VERSION}
 ENV LIBARCHIVE_URL="https://github.com/libarchive/libarchive/archive/refs/tags/v${TAR_VERSION}.tar.gz"
+ARG ZLIB_VERSION=${ZLIB_VERSION:-"1.3.1"}
+ENV ZLIB_VERSION=${ZLIB_VERSION}
+ENV ZLIB_URL="https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
 ENV PATH="/home/builder/llvm/bin:/usr/bin:/usr/local/bin:$PATH"
 ENV CC=clang
 ENV CXX=clang++
@@ -248,7 +255,7 @@ RUN mkdir -p /out/bin && cp build/bsdtar /out/bin/bsdtar
 # Final artifact stage: copy bsdtar
 FROM scratch AS mitl-bsdtar-lite
 
-LABEL version="20250916"
+LABEL version="20250918"
 LABEL org.opencontainers.image.title="MITL-BSDtar-lite"
 LABEL org.opencontainers.image.description="Hermetically built BSD tar."
 LABEL org.opencontainers.image.vendor="individual"
