@@ -164,7 +164,6 @@ RUN mkdir -p /home/builder/llvm && \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
       -DCMAKE_C_COMPILER=clang \
       -DCMAKE_CXX_COMPILER=clang++ \
-      -DLLVM_USE_LINKER=lld \
       -DCMAKE_LINKER=$(command -v ld.lld) \
       -DCMAKE_AR=/usr/bin/llvm-ar \
       -DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
@@ -172,23 +171,14 @@ RUN mkdir -p /home/builder/llvm && \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
       -DLIBCXX_USE_COMPILER_RT=OFF \
       -DLIBCXXABI_USE_COMPILER_RT=OFF \
-      -DLLVM_ENABLE_RUNTIMES="libunwind;libcxx;libcxxabi" \
       -DLLVM_ENABLE_PROJECTS="clang;lld" \
       -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
       -DBUILD_SHARED_LIBS=OFF \
-      -DLLVM_ENABLE_BINDINGS=OFF -DLLVM_BUILD_TESTS=OFF \
-      -DLIBUNWIND_ENABLE_SHARED=OFF \
-      -DLIBUNWIND_ENABLE_STATIC=ON \
-      -DLIBCXX_ENABLE_SHARED=OFF \
-      -DLIBCXX_ENABLE_STATIC=ON \
-      -DLIBCXX_ENABLE_SHARED=OFF \
-      -DLIBCXX_ENABLE_STATIC=ON \
-      -DLIBCXXABI_ENABLE_SHARED=OFF \
-      -DLIBCXXABI_ENABLE_STATIC=ON
+      -DLLVM_ENABLE_BINDINGS=OFF -DLLVM_BUILD_TESTS=OFF
 
 # Build LLVM (monorepo layout: projects under llvmorg/)
 RUN cd /home/builder/llvmorg/ && \
-    cmake --build ./llvm-build -j$(nproc) --target install
+    cmake --build ./llvm-build --target install -- -j$(nproc)
 
 # Ensure new toolchain is first in PATH
 ENV PATH=/home/builder/llvm/bin:$PATH
