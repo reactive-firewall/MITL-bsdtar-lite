@@ -19,12 +19,17 @@ ARG TAR_VERSION=${TAR_VERSION:-"3.8.1"}
 FROM --platform="linux/${TARGETARCH}" alpine:latest AS fetcher
 
 # Set environment variables
+ARG LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.3"}
 ENV LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.3"}
 ENV LIBEXECINFO_URL="https://github.com/reactive-firewall/libexecinfo/raw/refs/tags/v${LIBEXECINFO_VERSION}/libexecinfo-${LIBEXECINFO_VERSION}r.tar.bz2"
+ARG LLVM_VERSION=${LLVM_VERSION:-"21.1.1"}
 ENV LLVM_VERSION=${LLVM_VERSION:-"21.1.1"}
 ENV LLVM_URL="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VERSION}.tar.gz"
+ARG TAR_VERSION=${TAR_VERSION:-"3.8.1"}
 ENV TAR_VERSION=${TAR_VERSION:-"3.8.1"}
 ENV LIBARCHIVE_URL="https://github.com/libarchive/libarchive/archive/refs/tags/v${TAR_VERSION}.tar.gz"
+ARG ZLIB_VERSION=1.2.13
+ENV ZLIB_URL="https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
 WORKDIR /fetch
 ENV CC=clang
 ENV CXX=clang++
@@ -63,6 +68,11 @@ RUN curl -fsSLo llvmorg-${LLVM_VERSION}.tar.gz \
     bsdtar -xzf llvmorg-${LLVM_VERSION}.tar.gz && \
     rm llvmorg-${LLVM_VERSION}.tar.gz && \
     mv /fetch/llvm-project-llvmorg-${LLVM_VERSION} /fetch/llvmorg
+RUN curl -fsSLo zlib-${ZLIB_VERSION}.tar.gz \
+    --url "${ZLIB_URL}" && \
+    bsdtar -xzf zlib-${ZLIB_VERSION}.tar.gz && \
+    rm zlib-${ZLIB_VERSION}.tar.gz && \
+    mv /fetch/zlib-${ZLIB_VERSION} /fetch/zlib
 RUN curl -fsSLo v${TAR_VERSION}.tar.gz \
     --url "$LIBARCHIVE_URL" && \
     bsdtar -xzf v${TAR_VERSION}.tar.gz && \
@@ -75,6 +85,7 @@ FROM --platform="linux/${TARGETARCH}" alpine:latest AS pre-bsdtar-builder
 # copy ONLY fetched source
 COPY --from=fetcher /fetch/libexecinfo /home/builder/libexecinfo
 COPY --from=fetcher /fetch/llvmorg /home/builder/llvmorg
+COPY --from=fetcher /fetch/zlib /home/builder/zlib
 RUN mkdir -p /home/builder/llvmorg/libc/config/baremetal/x86_64
 COPY x86_64_musl_entrypoints.txt /home/builder/llvmorg/libc/config/baremetal/x86_64/entrypoints.txt
 COPY x86_64_musl_headers.txt /home/builder/llvmorg/libc/config/baremetal/x86_64/headers.txt
@@ -188,6 +199,20 @@ ENV AR=/home/builder/llvm/bin/llvm-ar
 ENV RANLIB=/home/builder/llvm/bin/llvm-ranlib
 ENV LD=/home/builder/llvm/bin/lld
 ENV STRIP=/home/builder/llvm/bin/llvm-strip
+
+# Configure and build static library only
+# zlib's configure uses CC/CFLAGS. We force static archive creation.
+WORKDIR /home/builder/zlib
+RUN CC="$CC" CXX="$CXX" AR="$AR" RANLIB="$RANLIB" LD="$LD" \
+    CFLAGS="-O3 -fPIC -static" \
+    ./configure --prefix="/usr/local" \
+ && make -j"$(nproc)" \
+ && make install
+
+ENV LD_LIBRARY_PATH=/usr/local/lib
+
+# Strip the static library to reduce size
+RUN strip --strip-unneeded "$LD_LIBRARY_PATH/libz.a" || true
 
 # Build libarchive and bsdtar with static linking
 WORKDIR /home/builder/libarchive
