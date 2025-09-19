@@ -198,6 +198,27 @@ RUN mkdir -p /home/builder/llvm && \
 RUN cd /home/builder/llvmorg/ && \
     cmake --build ./llvm-build --target install -- -j$(nproc)
 
+# DEBUG CODE for SEG FAULT
+
+RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
+  apk add cmd:file
+
+RUN file /home/builder/llvm/bin/clang \
+    /home/builder/llvm/bin/clang++ \
+    /home/builder/llvm/bin/llvm-ar
+
+RUN /home/builder/llvm/bin/clang --version && \
+    /home/builder/llvm/bin/clang++ --version && \
+    /home/builder/llvm/bin/llvm-ar --version
+
+RUN file /home/builder/llvm/bin/lld \
+    /home/builder/llvm/bin/llvm-ranlib
+
+RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
+  apk del cmd:file || true
+
+# END DEBUG CODE
+
 # Ensure new toolchain is first in PATH
 ENV PATH=/home/builder/llvm/bin:$PATH
 ENV CC=/home/builder/llvm/bin/clang
@@ -216,14 +237,10 @@ RUN CC="$CC" CXX="$CXX" AR="$AR" RANLIB="$RANLIB" LD="$LD" \
  && make -j"$(nproc)" libz.a \
  && make install
 
-ENV LD_LIBRARY_PATH=/usr/local/lib
+ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 # Strip the static library to reduce size
-RUN strip --strip-unneeded "$LD_LIBRARY_PATH/libz.a" || true
-
-RUN /home/builder/llvm/bin/clang --version && \
-    /home/builder/llvm/bin/clang++ --version && \
-    /home/builder/llvm/bin/llvm-ar --version
+RUN strip --strip-unneeded "/usr/local/lib/libz.a" || true
 
 # Build libarchive and bsdtar with static linking
 WORKDIR /home/builder/libarchive
