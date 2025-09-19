@@ -221,8 +221,7 @@ ENV LD_LIBRARY_PATH=/usr/local/lib
 # Strip the static library to reduce size
 RUN strip --strip-unneeded "$LD_LIBRARY_PATH/libz.a" || true
 
-RUN file /home/builder/llvm/bin/clang /home/builder/llvm/bin/clang++ /home/builder/llvm/bin/llvm-ar && \
-    /home/builder/llvm/bin/clang --version && \
+RUN /home/builder/llvm/bin/clang --version && \
     /home/builder/llvm/bin/clang++ --version && \
     /home/builder/llvm/bin/llvm-ar --version
 
