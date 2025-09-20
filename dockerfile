@@ -198,14 +198,23 @@ RUN mkdir -p /home/builder/llvm && \
 RUN cd /home/builder/llvmorg/ && \
     cmake --build ./llvm-build --target install -- -j$(nproc)
 
+RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
+  apk del \
+    zlib-dev \
+    zip
+
 # DEBUG CODE for SEG FAULT
 
 RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
   apk add cmd:file
 
-RUN file /home/builder/llvm/bin/clang \
+RUN file /home/builder/llvm/bin/clang-21 \
+    /home/builder/llvm/bin/clang \
     /home/builder/llvm/bin/clang++ \
-    /home/builder/llvm/bin/llvm-ar
+    /home/builder/llvm/bin/llvm-ar \
+    /home/builder/llvm/bin/llvm-ranlib \
+    /home/builder/llvm/bin/lld \
+    /home/builder/llvm/bin/ld
 
 RUN /home/builder/llvm/bin/clang --version && \
     /home/builder/llvm/bin/clang++ --version && \
@@ -247,10 +256,11 @@ WORKDIR /home/builder/libarchive
 RUN mkdir -p build && cd build && \
     cmake -G Ninja \
       -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_C_COMPILER=${CC} \
-      -DCMAKE_CXX_COMPILER=${CXX} \
-      -DCMAKE_AR=${AR} \
-      -DCMAKE_RANLIB=${RANLIB} \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_CXX_COMPILER=clang++ \
+      -DCMAKE_LINKER=$(command -v ld.lld) \
+      -DCMAKE_AR=llvm-ar \
+      -DCMAKE_RANLIB=llvm-ranlib \
       -DBUILD_SHARED_LIBS=OFF \
       -DENABLE_BZIP2=OFF \
       -DENABLE_XZ=OFF \
@@ -260,7 +270,7 @@ RUN mkdir -p build && cd build && \
       -DENABLE_LZ4=OFF \
       -DENABLE_ICONV=OFF \
       -DENABLE_TESTS=OFF \
-      -DCMAKE_EXE_LINKER_FLAGS="-static -s -fuse-ld=lld" \
+      -DCMAKE_EXE_LINKER_FLAGS="-fPIC -static -s -fuse-ld=lld" \
       -S .. -B . && \
     cmake --build . --target libarchive.a bsdtar -- -j$(nproc)
 
