@@ -113,7 +113,6 @@ ENV CC=clang
 ENV CXX=clang++
 ENV AR=llvm-ar
 ENV RANLIB=llvm-ranlib
-ENV LD=lld
 ENV STRIP=llvm-strip
 ENV BSD=/usr/include/bsd
 
@@ -162,9 +161,6 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
 
 WORKDIR /home/builder
 
-# make clang -fuse-ld=lld driver test succeed
-RUN ln -sf "$(command -v ld.lld)" /usr/local/bin/lld || true
-
 # Build libexecinfo
 RUN cd /home/builder/libexecinfo && \
     make && \
@@ -208,13 +204,12 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
 RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
   apk add cmd:file
 
-RUN file /home/builder/llvm/bin/clang-21 \
-    /home/builder/llvm/bin/clang \
-    /home/builder/llvm/bin/clang++ \
-    /home/builder/llvm/bin/llvm-ar \
-    /home/builder/llvm/bin/llvm-ranlib \
-    /home/builder/llvm/bin/lld \
-    /home/builder/llvm/bin/ld
+RUN ls -lap /home/builder/llvm/bin/ && \
+    file /home/builder/llvm/bin/clang-21 \
+      /home/builder/llvm/bin/clang \
+      /home/builder/llvm/bin/clang++ \
+      /home/builder/llvm/bin/llvm-ar \
+      /home/builder/llvm/bin/llvm-ranlib
 
 RUN /home/builder/llvm/bin/clang --version && \
     /home/builder/llvm/bin/clang++ --version && \
@@ -229,12 +224,12 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
 # END DEBUG CODE
 
 # Ensure new toolchain is first in PATH
-ENV PATH=/home/builder/llvm/bin:$PATH
 ENV CC=/home/builder/llvm/bin/clang
 ENV CXX=/home/builder/llvm/bin/clang++
 ENV AR=/home/builder/llvm/bin/llvm-ar
 ENV RANLIB=/home/builder/llvm/bin/llvm-ranlib
-ENV LD=/home/builder/llvm/bin/lld
+ENV LD=lld
+ENV LDFLAGS="-fuse-ld=lld"
 ENV STRIP=/home/builder/llvm/bin/llvm-strip
 
 # Configure and build static library only
@@ -246,7 +241,8 @@ RUN CC="$CC" CXX="$CXX" AR="$AR" RANLIB="$RANLIB" LD="$LD" \
  && make -j"$(nproc)" libz.a \
  && make install
 
-ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+# disabled to rule out issues
+# ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 # Strip the static library to reduce size
 RUN strip --strip-unneeded "/usr/local/lib/libz.a" || true
@@ -270,7 +266,7 @@ RUN mkdir -p build && cd build && \
       -DENABLE_LZ4=OFF \
       -DENABLE_ICONV=OFF \
       -DENABLE_TESTS=OFF \
-      -DCMAKE_EXE_LINKER_FLAGS="-fPIC -static -s -fuse-ld=lld" \
+      -DCMAKE_EXE_LINKER_FLAGS="-fPIC -static -s" \
       -S .. -B . && \
     cmake --build . --target libarchive.a bsdtar -- -j$(nproc)
 
