@@ -232,7 +232,51 @@ RUN strip --strip-unneeded "/usr/local/lib/libz.a" || true
 
 ## DEBUG CODE
 
-RUN dash /usr/bin/pick-and-anvil.sh
+# VALIDATE CLANG
+RUN printf "%s\n" 'int main(void) {return 0;}' > sanity.c && \
+    /home/builder/llvm/bin/clang -target aarch64-unknown-none-musl -static -nostdlib -fuse-ld=lld sanity.c -o sanity && \
+    file sanity
+
+# CHECK toolchain paths
+RUN ls -lap /home/builder/llvm/bin/ && \
+    ls -lap /home/builder/llvm/include && \
+    ls -lap /home/builder/llvm/lib && \
+    ls -lap /home/builder/llvm/libexec && \
+    ls -lap /home/builder/llvm/
+
+# CHECK lib paths
+RUN ls -lap /usr/lib && \
+    ls -lap /lib && \
+    ls -lap /usr/shar/lib && \
+    ls -lap /usr/local/lib && \
+    ls -lap /opt/lib && \
+    ls -lap /libexec && \
+    ls -lap /usr/libecec && \
+    ls -lap /libexec && \
+    ls -lap /usr/share/libexec && \
+    ls -lap /usr/local/libexec && \
+    ls -lap /opt/libexec
+
+# Create a directory for the tests
+RUN mkdir -p /tests
+
+# Create test source files
+RUN echo '#include <stdio.h>\nint main() { printf("Hello, World!\\n"); return 0; }' > /tests/test_syntax.c
+RUN echo '#include <stdio.h>\nint main() { int a = 5; float b = 3.2; double c = 4.5; printf("Sum: %f\\n", a + b + c); return 0; }' > /tests/test_data_types.c
+RUN echo '#include <stdio.h>\nint main() { for (int i = 0; i < 5; i++) { printf("Iteration: %d\\n", i); } return 0; }' > /tests/test_control_structures.c
+RUN echo '#include <stdio.h>\nint add(int x, int y) { return x + y; }\nint main() { printf("Sum: %d\\n", add(3, 4)); return 0; }' > /tests/test_functions.c
+RUN echo '#include <assert.h>\nint main() { static_assert(1 == 1, "This should always be true"); return 0; }' > /tests/test_c11_features.c
+RUN echo '#include <iostream>\nclass Base { public: virtual void show() { std::cout << "Base class" << std::endl; }}; class Derived : public Base { public: void show() override { std::cout << "Derived class" << std::endl; }}; int main() { Base* b = new Derived(); b->show(); delete b; return 0; }' > /tests/test_classes.cpp
+RUN echo '#include <iostream>\n#include <vector>\n#include <algorithm>\nint main() { std::vector<int> vec = {1, 2, 3, 4, 5}; std::for_each(vec.begin(), vec.end(), [](int n) { std::cout << n << " "; }); std::cout << std::endl; return 0; }' > /tests/test_lambda.cpp
+RUN echo '#include <iostream>\n#include <stdexcept>\nint main() { try { throw std::runtime_error("An error occurred"); } catch (const std::exception& e) { std::cout << "Caught exception: " << e.what() << std::endl; } return 0; }' > /tests/test_exceptions.cpp
+RUN echo '#include <iostream>\ntemplate <typename T> T add(T a, T b) { return a + b; }\nint main() { std::cout << "Sum: " << add(3, 4) << std::endl; return 0; }' > /tests/test_templates.cpp
+RUN echo '#include <iostream>\n#include <memory>\nclass MyClass { public: MyClass() { std::cout << "Constructor" << std::endl; } ~MyClass() { std::cout << "Destructor" << std::endl; }};\nint main() { std::unique_ptr<MyClass> ptr(new MyClass()); return 0; }' > /tests/test_smart_pointers.cpp
+RUN echo '#include <iostream>\n#include <vector>\nint main() { std::vector<int> vec = {1, 2, 3, 4, 5}; for (int n : vec) { std::cout << n << " "; } std::cout << std::endl; return 0; }' > /tests/test_range_based_for.cpp
+RUN echo '#include <iostream>\nconstexpr int square(int x) { return x * x; }\nint main() { std::cout << "Square of 5: " << square(5) << std::endl; return 0; }' > /tests/test_constexpr.cpp
+RUN echo '#include <stdio.h>\n#include <pthread.h>\nvoid* print_message(void* ptr) { char* message = (char*)ptr; printf("%s\\n", message); return NULL; }\nint main() { pthread_t thread1; const char* message1 = "Thread 1"; pthread_create(&thread1, NULL, print_message, (void*)message1); pthread_join(thread1, NULL); return 0; }' > /tests/test_threading.c
+
+# Compile and run tests
+RUN /path/to/your/toolchain/bin/clang -target ${TARGET_TRIPLE} -o /tests/test_s
 
 ## END DEBUG CODE
 
@@ -244,6 +288,9 @@ RUN mkdir -p build && cd build && \
     cmake -G Ninja \
       -DCMAKE_TOOLCHAIN_FILE=../toolchain-baremetal.cmake \
       -DBUILD_SHARED_LIBS=OFF \
+      -DENABLE_ACL=OFF \
+      -DENABLE_XATTR=OFF \
+      -DENABLE_LZMA=OFF \
       -DENABLE_BZIP2=OFF \
       -DENABLE_XZ=OFF \
       -DENABLE_ZSTD=OFF \
