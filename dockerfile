@@ -91,7 +91,8 @@ RUN mkdir -p /home/builder/llvmorg/libc/config/baremetal/x86_64
 COPY x86_64_musl_entrypoints.txt /home/builder/llvmorg/libc/config/baremetal/x86_64/entrypoints.txt
 COPY x86_64_musl_headers.txt /home/builder/llvmorg/libc/config/baremetal/x86_64/headers.txt
 COPY --from=fetcher /fetch/libarchive /home/builder/libarchive
-COPY toolchain-baremetal.cmake /home/builder/libarchive/toolchain-baremetal.cmake
+COPY generate-toolchain-baremetal.sh /usr/bin/generate-toolchain-baremetal.sh
+COPY pick-and-anvil.sh /usr/bin/pick-and-anvil.sh
 
 ARG TARGET_TRIPLE
 ENV TARGET_TRIPLE=${TARGET_TRIPLE}
@@ -137,6 +138,7 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
   apk update && \
   apk add \
     cmd:bash \
+    cmd:dash \
     clang \
     lld \
     llvm \
@@ -159,6 +161,10 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
 
 # Optional: install minimal compression libs you need, else disable them in CMake
 # apk add --no-cache xz-dev bzip2-dev zlib-dev zstd-dev lz4-dev
+
+# make script excutable
+RUN chmod 555 /usr/bin/generate-toolchain-baremetal.sh && \
+    chmod 555 /usr/bin/pick-and-anvil.sh
 
 WORKDIR /home/builder
 
@@ -223,6 +229,14 @@ RUN CC="$CC" CXX="$CXX" AR="$AR" RANLIB="$RANLIB" LD="$LD" \
 
 # Strip the static library to reduce size
 RUN strip --strip-unneeded "/usr/local/lib/libz.a" || true
+
+## DEBUG CODE
+
+RUN /usr/bin/pick-and-anvil.sh
+
+## END DEBUG CODE
+
+RUN dash /usr/bin/generate-toolchain-baremetal.sh
 
 # Build libarchive and bsdtar with static linking
 WORKDIR /home/builder/libarchive
