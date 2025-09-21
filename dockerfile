@@ -91,6 +91,7 @@ RUN mkdir -p /home/builder/llvmorg/libc/config/baremetal/x86_64
 COPY x86_64_musl_entrypoints.txt /home/builder/llvmorg/libc/config/baremetal/x86_64/entrypoints.txt
 COPY x86_64_musl_headers.txt /home/builder/llvmorg/libc/config/baremetal/x86_64/headers.txt
 COPY --from=fetcher /fetch/libarchive /home/builder/libarchive
+COPY toolchain-baremetal.cmake /home/builder/libarchive/toolchain-baremetal.cmake
 
 ARG TARGET_TRIPLE
 ENV TARGET_TRIPLE=${TARGET_TRIPLE}
@@ -199,30 +200,6 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
     zlib-dev \
     zip
 
-# DEBUG CODE for SEG FAULT
-
-RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
-  apk add cmd:file
-
-RUN ls -lap /home/builder/llvm/bin/ && \
-    file /home/builder/llvm/bin/clang-21 \
-      /home/builder/llvm/bin/clang \
-      /home/builder/llvm/bin/clang++ \
-      /home/builder/llvm/bin/llvm-ar \
-      /home/builder/llvm/bin/llvm-ranlib
-
-RUN /home/builder/llvm/bin/clang --version && \
-    /home/builder/llvm/bin/clang++ --version && \
-    /home/builder/llvm/bin/llvm-ar --version
-
-RUN file /home/builder/llvm/bin/lld \
-    /home/builder/llvm/bin/llvm-ranlib
-
-RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
-  apk del cmd:file || true
-
-# END DEBUG CODE
-
 # Ensure new toolchain is first in PATH
 ENV CC=/home/builder/llvm/bin/clang
 ENV CXX=/home/builder/llvm/bin/clang++
@@ -251,12 +228,7 @@ RUN strip --strip-unneeded "/usr/local/lib/libz.a" || true
 WORKDIR /home/builder/libarchive
 RUN mkdir -p build && cd build && \
     cmake -G Ninja \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_C_COMPILER=clang \
-      -DCMAKE_CXX_COMPILER=clang++ \
-      -DCMAKE_LINKER=$(command -v ld.lld) \
-      -DCMAKE_AR=llvm-ar \
-      -DCMAKE_RANLIB=llvm-ranlib \
+      -DCMAKE_TOOLCHAIN_FILE=../toolchain-baremetal.cmake \
       -DBUILD_SHARED_LIBS=OFF \
       -DENABLE_BZIP2=OFF \
       -DENABLE_XZ=OFF \
