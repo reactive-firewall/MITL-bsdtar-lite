@@ -232,7 +232,7 @@ RUN strip --strip-unneeded "/usr/local/lib/libz.a" || true
 
 ## DEBUG CODE
 
-RUN /usr/bin/pick-and-anvil.sh
+RUN dash /usr/bin/pick-and-anvil.sh
 
 ## END DEBUG CODE
 
