@@ -245,21 +245,18 @@ RUN ls -lap /home/builder/llvm/bin/ && \
     ls -lap /home/builder/llvm/
 
 # CHECK lib paths
-RUN ls -lap /usr/lib && \
-    ls -lap /lib && \
-    ls -lap /usr/shar/lib && \
-    ls -lap /usr/local/lib && \
-    ls -lap /opt/lib && \
-    ls -lap /libexec && \
-    ls -lap /usr/libecec && \
-    ls -lap /libexec && \
-    ls -lap /usr/share/libexec && \
-    ls -lap /usr/local/libexec && \
-    ls -lap /opt/libexec
+RUN for d in /usr/lib /lib /usr/local/lib /usr/share/lib /opt/lib; do \
+      echo "$d" ; \
+      [ -d "$d" ] && ls -lap "$d"; \
+    done ; \
+    for d in /usr/libexec /libexec /usr/local/libexec /usr/share/libexec /opt/libexec; do \
+      echo "$d" ; \
+      [ -d "$d" ] && ls -lap "$d"; \
+    done ;
 
 # VALIDATE CLANG
 RUN printf "%s\n" 'int main(void) {return 0;}' > sanity.c && \
-    /home/builder/llvm/bin/clang -target aarch64-unknown-none-musl -fPIC -static -nostdlib -o sanity.o -c sanity.c && \
+    /home/builder/llvm/bin/clang -target ${TARGET_TRIPLE} -fPIC -static -nostdlib -o sanity.o -c sanity.c && \
     /home/builder/llvm/bin/clang -Os sanity.o -fuse-ld=lld sanity && \
     file sanity
 
@@ -282,7 +279,7 @@ RUN echo '#include <iostream>\nconstexpr int square(int x) { return x * x; }\nin
 RUN echo '#include <stdio.h>\n#include <pthread.h>\nvoid* print_message(void* ptr) { char* message = (char*)ptr; printf("%s\\n", message); return NULL; }\nint main() { pthread_t thread1; const char* message1 = "Thread 1"; pthread_create(&thread1, NULL, print_message, (void*)message1); pthread_join(thread1, NULL); return 0; }' > /tests/test_threading.c
 
 # Compile and run tests
-RUN /path/to/your/toolchain/bin/clang -target ${TARGET_TRIPLE} -o /tests/test_s
+RUN /home/builder/llvm/bin/clang -target ${TARGET_TRIPLE} -o /tests/test_s
 
 ## END DEBUG CODE
 
