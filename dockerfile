@@ -159,6 +159,11 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
     libbsd-dev \
     zip
 
+RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
+  apk del \
+    gcc \
+    zip
+
 # Optional: install minimal compression libs you need, else disable them in CMake
 # apk add --no-cache xz-dev bzip2-dev zlib-dev zstd-dev lz4-dev
 
@@ -192,7 +197,7 @@ RUN mkdir -p /home/builder/llvm && \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
       -DLIBCXX_USE_COMPILER_RT=OFF \
       -DLIBCXXABI_USE_COMPILER_RT=OFF \
-      -DLLVM_ENABLE_PROJECTS="clang;lld" \
+      -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra" \
       -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
       -DBUILD_SHARED_LIBS=OFF \
       -DLLVM_ENABLE_BINDINGS=OFF -DLLVM_BUILD_TESTS=OFF
@@ -232,11 +237,6 @@ RUN strip --strip-unneeded "/usr/local/lib/libz.a" || true
 
 ## DEBUG CODE
 
-# VALIDATE CLANG
-RUN printf "%s\n" 'int main(void) {return 0;}' > sanity.c && \
-    /home/builder/llvm/bin/clang -target aarch64-unknown-none-musl -static -nostdlib -fuse-ld=lld sanity.c -o sanity && \
-    file sanity
-
 # CHECK toolchain paths
 RUN ls -lap /home/builder/llvm/bin/ && \
     ls -lap /home/builder/llvm/include && \
@@ -256,6 +256,12 @@ RUN ls -lap /usr/lib && \
     ls -lap /usr/share/libexec && \
     ls -lap /usr/local/libexec && \
     ls -lap /opt/libexec
+
+# VALIDATE CLANG
+RUN printf "%s\n" 'int main(void) {return 0;}' > sanity.c && \
+    /home/builder/llvm/bin/clang -target aarch64-unknown-none-musl -fPIC -static -nostdlib -o sanity.o -c sanity.c && \
+    /home/builder/llvm/bin/clang -Os sanity.o -fuse-ld=lld sanity && \
+    file sanity
 
 # Create a directory for the tests
 RUN mkdir -p /tests
