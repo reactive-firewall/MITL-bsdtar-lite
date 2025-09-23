@@ -202,9 +202,9 @@ RUN mkdir -p /home/builder/llvm && \
       -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"
 
 # Build LLVM (monorepo layout: projects under llvmorg/)
-RUN ninja -C build runtimes && \
-    ninja -C build check-runtimes && \
-    ninja -C build install-runtimes
+RUN ninja -C llvm-build runtimes && \
+    ninja -C llvm-build check-runtimes && \
+    ninja -C llvm-build install-runtimes
 
 # (DISABLED) Build LLVM (monorepo layout: projects under llvmorg/)
 # RUN cd /home/builder/llvmorg/ && \
