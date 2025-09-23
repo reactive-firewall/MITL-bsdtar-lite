@@ -199,12 +199,12 @@ RUN mkdir -p /home/builder/llvm && \
       -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
       -DBUILD_SHARED_LIBS=OFF \
       -DLLVM_ENABLE_BINDINGS=OFF \
-      -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"
+      -DLLVM_ENABLE_LLD=ON
 
 # Build LLVM (monorepo layout: projects under llvmorg/)
-RUN ninja -C llvm-build runtimes && \
-    ninja -C llvm-build check-runtimes && \
-    ninja -C llvm-build install-runtimes
+RUN ninja -C /home/builder/llvmorg/llvm-build runtimes && \
+    ninja -C /home/builder/llvmorg/llvm-build check-runtimes && \
+    ninja -C /home/builder/llvmorg/llvm-build install-runtimes
 
 # (DISABLED) Build LLVM (monorepo layout: projects under llvmorg/)
 # RUN cd /home/builder/llvmorg/ && \
