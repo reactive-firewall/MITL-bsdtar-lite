@@ -245,14 +245,12 @@ RUN ls -lap /home/builder/llvm/bin/ && \
     ls -lap /home/builder/llvm/
 
 # CHECK lib paths
-RUN for d in /usr/lib /lib /usr/local/lib /usr/share/lib /opt/lib; do \
-      echo "$d" ; \
-      [ -d "$d" ] && ls -lap "$d"; \
-    done ; \
-    for d in /usr/libexec /libexec /usr/local/libexec /usr/share/libexec /opt/libexec; do \
+RUN for d in /usr/lib /lib /usr/local/lib /usr/share/lib /usr/libexec; do \
       echo "$d" ; \
       [ -d "$d" ] && ls -lap "$d"; \
     done ;
+
+RUN dash /usr/bin/pick-and-anvil.sh || true ;
 
 # VALIDATE CLANG
 RUN printf "%s\n" 'int main(void) {return 0;}' > sanity.c && \
