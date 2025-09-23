@@ -190,21 +190,25 @@ RUN mkdir -p /home/builder/llvm && \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
       -DCMAKE_C_COMPILER=clang \
       -DCMAKE_CXX_COMPILER=clang++ \
-      -DCMAKE_LINKER=$(command -v ld.lld) \
       -DCMAKE_AR=/usr/bin/llvm-ar \
       -DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
-      -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET_TRIPLE}" \
+      -DLLVM_ENABLE_PROJECTS="clang;lld" \
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
+      -DLLVM_RUNTIME_TARGETS="${TARGET_TRIPLE}" \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
-      -DLIBCXX_USE_COMPILER_RT=OFF \
-      -DLIBCXXABI_USE_COMPILER_RT=OFF \
-      -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra" \
       -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
       -DBUILD_SHARED_LIBS=OFF \
-      -DLLVM_ENABLE_BINDINGS=OFF -DLLVM_BUILD_TESTS=OFF
+      -DLLVM_ENABLE_BINDINGS=OFF \
+      -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"
 
 # Build LLVM (monorepo layout: projects under llvmorg/)
-RUN cd /home/builder/llvmorg/ && \
-    cmake --build ./llvm-build --target install -- -j$(nproc)
+RUN ninja -C build runtimes && \
+    ninja -C build check-runtimes && \
+    ninja -C build install-runtimes
+
+# (DISABLED) Build LLVM (monorepo layout: projects under llvmorg/)
+# RUN cd /home/builder/llvmorg/ && \
+#    cmake --build ./llvm-build --target install -- -j$(nproc)
 
 RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
   apk del \

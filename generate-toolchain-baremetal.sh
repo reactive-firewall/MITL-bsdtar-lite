@@ -16,19 +16,19 @@ uname_m="$(uname -m 2>/dev/null || echo unknown)"
 case "$uname_m" in
   x86_64|amd64)
     CMAKE_PROC="x86_64"
-    TRIPLE="x86_64-unknown-none-musl"
+    TRIPLE="x86_64-none-musl"
     ;;
   aarch64|arm64)
     CMAKE_PROC="aarch64"
-    TRIPLE="aarch64-unknown-none-musl"
+    TRIPLE="aarch64-none-musl"
     ;;
   armv7l|armv7)
     CMAKE_PROC="armv7"
-    TRIPLE="arm-unknown-none-musleabihf"
+    TRIPLE="arm-none-musleabihf"
     ;;
   *)
     CMAKE_PROC="$uname_m"
-    TRIPLE="${uname_m}-unknown-none-musl"
+    TRIPLE="${uname_m}-none-musl"
     ;;
 esac
 
@@ -47,23 +47,21 @@ set(CMAKE_STRIP ${STRIP})
 set(CMAKE_LINKER ${LLD})
 set(CMAKE_C_COMPILER_TARGET ${TRIPLE})
 set(CMAKE_CXX_COMPILER_TARGET ${TRIPLE})
-set(CMAKE_EXE_LINKER_FLAGS "-static -nostdlib -fuse-ld=lld")
+set(CMAKE_EXE_LINKER_FLAGS "-static -nostdlib -fPIC -fuse-ld=lld")
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 set(CMAKE_CROSSCOMPILING TRUE)
+
+# Adjust the search paths
+set(CMAKE_FIND_ROOT_PATH /home/builder/llvm/)
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
 ## refuse these:
 set(NETTLE_FOUND FALSE)
 set(MBEDTLS_FOUND FALSE)
 set(HAVE_LIBMBEDCRYPTO FALSE)
 
-set(CMAKE_C_COMPILER_WORKS TRUE CACHE BOOL "C compiler works")
-set(CMAKE_CXX_COMPILER_WORKS TRUE CACHE BOOL "C++ compiler works")
-set(CMAKE_C_COMPILER_FORCED TRUE CACHE BOOL "Force C compiler")
-set(CMAKE_CXX_COMPILER_FORCED TRUE CACHE BOOL "Force C++ compiler")
-set(HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1 CACHE INTERNAL "")
-set(HAVE_STRUCT_STAT_ST_MTIMESPEC_TV_NSEC 0 CACHE INTERNAL "")
-set(CMAKE_TRY_RUN_SKIP TRUE CACHE STRING "Skip try-run")
-set(CMAKE_CROSSCOMPILING_EMULATOR "" CACHE STRING "No emulator")
 EOF
 
 echo "Wrote $OUT (processor=${CMAKE_PROC}, target=${TRIPLE})"
