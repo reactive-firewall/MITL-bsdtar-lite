@@ -201,7 +201,7 @@ guess_roles() {
     g++|g++-*|*g++*|*c++*|clang++)
       roles="${roles}C++-compiler "
       ;;
-    tcc|tcc-*))
+    tcc|tcc-*)
       roles="${roles}C-compiler TCC-impl "
       ;;
     gfortran|f95|flang|g77|f90|gfortran-*)
