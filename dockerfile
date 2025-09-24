@@ -1,17 +1,5 @@
 # syntax=docker/dockerfile:1
 
-# version is passed through by Docker.
-# shellcheck disable=SC2154
-ARG LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.3"}
-
-# version is passed through by Docker.
-# shellcheck disable=SC2154
-ARG LLVM_VERSION=${LLVM_VERSION:-"21.1.1"}
-
-# version is passed through by Docker.
-# shellcheck disable=SC2154
-ARG TAR_VERSION=${TAR_VERSION:-"3.8.1"}
-
 # ---- fetcher stage: install and cache required Alpine packages and fetch release tarballs ----
 
 # Use MIT licensed Alpine as the base image for the build environment
@@ -96,6 +84,9 @@ COPY pick-and-anvil.sh /usr/bin/pick-and-anvil.sh
 
 ARG TARGET_TRIPLE
 ENV TARGET_TRIPLE=${TARGET_TRIPLE}
+
+ARG HOST_TRIPLE
+ENV HOST_TRIPLE=${HOST_TRIPLE:-${TARGET_TRIPLE}}
 
 # provenance ENV (kept intentionally)
 ARG LIBEXECINFO_VERSION=${LIBEXECINFO_VERSION:-"1.3"}
@@ -191,15 +182,16 @@ RUN mkdir -p /home/builder/llvm && \
       -DCMAKE_C_COMPILER=clang \
       -DCMAKE_CXX_COMPILER=clang++ \
       -DCMAKE_AR=/usr/bin/llvm-ar \
+      -DCMAKE_LINKER=$(command -v ld.lld) \
       -DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
       -DLLVM_ENABLE_PROJECTS="clang;lld" \
       -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
+      -DLLVM_HOST_TRIPLE="${HOST_TRIPLE}" \
       -DLLVM_RUNTIME_TARGETS="${TARGET_TRIPLE}" \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
       -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
       -DBUILD_SHARED_LIBS=OFF \
-      -DLLVM_ENABLE_BINDINGS=OFF \
-      -DLLVM_ENABLE_LLD=ON
+      -DLLVM_ENABLE_BINDINGS=OFF
 
 # Build LLVM (monorepo layout: projects under llvmorg/)
 RUN ninja -C /home/builder/llvmorg/llvm-build runtimes && \
@@ -327,8 +319,10 @@ LABEL org.opencontainers.image.vendor="individual"
 LABEL org.opencontainers.image.licenses="Apache-2.0 AND BSD-2"
 
 # provenance ENV (kept intentionally)
+ARG LLVM_VERSION=${LLVM_VERSION:-"21.1.1"}
 ENV LLVM_VERSION=${LLVM_VERSION}
 ENV LLVM_URL="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VERSION}.tar.gz"
+ARG TAR_VERSION=${TAR_VERSION:-"3.8.1"}
 ENV TAR_VERSION=${TAR_VERSION}
 ENV LIBARCHIVE_URL="https://github.com/libarchive/libarchive/archive/refs/tags/v${TAR_VERSION}.tar.gz"
 ENV PATH=/usr/bin:/home/builder/llvm/bin
