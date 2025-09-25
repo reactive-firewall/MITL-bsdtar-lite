@@ -188,7 +188,6 @@ RUN mkdir -p /home/builder/llvm && \
       -DCMAKE_AR=/usr/bin/llvm-ar \
       -DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
       -DLLVM_ENABLE_PROJECTS="clang;lld" \
-      -DLLVM_USE_LINKER=lld \
       -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
       -DLLVM_HOST_TRIPLE="${HOST_TRIPLE}" \
       -DLLVM_RUNTIME_TARGETS="${TARGET_TRIPLE}" \
