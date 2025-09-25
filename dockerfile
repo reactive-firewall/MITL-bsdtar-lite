@@ -101,7 +101,7 @@ ENV LIBARCHIVE_URL="https://github.com/libarchive/libarchive/archive/refs/tags/v
 ARG ZLIB_VERSION=${ZLIB_VERSION:-"1.3.1"}
 ENV ZLIB_VERSION=${ZLIB_VERSION}
 ENV ZLIB_URL="https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
-ENV PATH="/home/builder/llvm/bin:/usr/bin:/usr/local/bin:$PATH"
+ENV PATH="/home/builder/llvm/bin:/usr/lib/llvm20/bin:/usr/bin:/usr/local/bin:$PATH"
 ENV CC=clang
 ENV CXX=clang++
 ENV AR=llvm-ar
@@ -116,6 +116,7 @@ ENV BSD=/usr/include/bsd
 # ninja-build - Apache-2.0
 # build-base - MIT
 # musl-dev - MIT
+# python3 - python licence
 # libc6-compat - MIT
 # libbsd-dev - BSD-3-Clause
 # curl - curl License / MIT
@@ -130,7 +131,8 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
   apk add \
     cmd:bash \
     cmd:dash \
-    clang \
+    clang20 \
+    cmd:clang \
     lld \
     llvm \
     cmd:lld \
@@ -141,9 +143,11 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked --network=default \
     llvm-runtimes \
     cmake \
     make \
+    python3 \
     ninja-build \
     cmd:ninja \
-    cmd:clang++ \
+    cmd:clang++-20 \
+    cmd:clang-cpp \
     musl-dev \
     pkgconfig \
     zlib-dev \
@@ -179,18 +183,20 @@ RUN mkdir -p /home/builder/llvm && \
     cmake -S ./llvm -B ./llvm-build -GNinja -Wno-dev \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/home/builder/llvm \
-      -DCMAKE_C_COMPILER=clang \
-      -DCMAKE_CXX_COMPILER=clang++ \
+      -DCMAKE_C_COMPILER=clang-20 \
+      -DCMAKE_CXX_COMPILER=clang++-20 \
       -DCMAKE_AR=/usr/bin/llvm-ar \
-      -DCMAKE_LINKER=$(command -v ld.lld) \
       -DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
       -DLLVM_ENABLE_PROJECTS="clang;lld" \
+      -DLLVM_USE_LINKER=lld \
       -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
       -DLLVM_HOST_TRIPLE="${HOST_TRIPLE}" \
       -DLLVM_RUNTIME_TARGETS="${TARGET_TRIPLE}" \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
       -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
       -DBUILD_SHARED_LIBS=OFF \
+      -DLIBCXX_ENABLE_STATIC=ON \
+      -DLIBCXX_ENABLE_EXCEPTIONS=ON \
       -DLLVM_ENABLE_BINDINGS=OFF
 
 # Build LLVM (monorepo layout: projects under llvmorg/)
